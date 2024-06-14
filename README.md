@@ -28,22 +28,22 @@ This project is a tax simulation form built using React, TypeScript, and the `re
 1. **Clone the repository:**
 
 ```sh
-   git clone https://github.com/ddrigota/portugal-tax.git
-   cd portugal-tax
+  git clone https://github.com/ddrigota/portugal-tax.git
+  cd portugal-tax
 ```
 
 2. **Install dependencies:**
 
 ```sh
-npm install
-# or
-yarn install
+  npm install
+  # or
+  yarn install
 ```
 
 3. **Start the development server:**
 
 ```sh
-   npm run dev
+  npm run dev
 ```
 
 ## Usage

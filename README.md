@@ -19,6 +19,7 @@ This project is a tax simulation form built using React, TypeScript, and the `re
 - **NextJS**
 - **TypeScript**
 - **React**
+- **Tailwind CSS**
 - **react-hook-form**
 - **zod**
 - **Schdcn/UI**

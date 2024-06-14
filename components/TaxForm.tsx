@@ -110,7 +110,7 @@ export function TaxForm() {
   }
 
   return (
-    <Card>
+    <Card className="row-span-3">
       <CardHeader>
         <CardTitle>Simulate your taxes</CardTitle>
         <CardDescription>Enter data below</CardDescription>

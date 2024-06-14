@@ -45,7 +45,7 @@ const formSchema = z.object({
   region: z.enum(["continental", "madeira", "azores"]),
   haveChildren: z.boolean(),
   numberOfChildren: z.coerce.number().nonnegative().min(1).max(10).optional(),
-  childrenAge: z.array(z.number()).optional(),
+  childrenAge: z.array(z.coerce.number().positive().min(1).max(18)).optional(),
   incomeCategory: z.enum(["A", "B"]),
   nonPortugueseCompany: z.boolean().optional(),
   atividadeOpenDate: z.date().optional(),
@@ -78,6 +78,7 @@ export function TaxForm() {
   const haveChildren = watch("haveChildren");
   const incomeCategory = watch("incomeCategory");
   const nonPortugueseCompany = watch("nonPortugueseCompany");
+  const numberOfChildren = watch("numberOfChildren");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -245,24 +246,51 @@ export function TaxForm() {
                     )}
                   />
                   {haveChildren && (
-                    <FormField
-                      control={form.control}
-                      name="numberOfChildren"
-                      render={({ field: { value, onChange } }) => (
-                        <FormItem>
-                          <FormLabel>Number of children: {value}</FormLabel>
-                          <FormControl>
-                            <Slider
-                              min={1}
-                              max={10}
-                              step={1}
-                              onValueChange={onChange}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="numberOfChildren"
+                        render={({ field: { value, onChange } }) => (
+                          <FormItem>
+                            <FormLabel>Number of children: {value}</FormLabel>
+                            <FormControl>
+                              <Slider
+                                min={1}
+                                max={10}
+                                step={1}
+                                onValueChange={onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {Array.from({ length: numberOfChildren || 0 }).map(
+                        (_, index) => (
+                          <FormField
+                            key={`child-age-${index}`}
+                            control={form.control}
+                            name={`childrenAge.${index}`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center justify-between">
+                                  <FormLabel>Child {index + 1} age</FormLabel>
+                                  <FormControl className="max-w-32">
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      max={18}
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        ),
                       )}
-                    />
+                    </>
                   )}
                 </>
               )}

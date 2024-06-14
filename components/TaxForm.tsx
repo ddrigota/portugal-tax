@@ -38,13 +38,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const formSchema = z.object({
   income: z.coerce.number().positive(),
-  deductions: z.coerce.number().positive().optional(),
+  deductions: z.coerce.number().nonnegative().optional(),
   period: z.enum(["2022", "2023", "2024"]),
   portugalResidency: z.boolean(),
   nhrStatus: z.boolean(),
   region: z.enum(["continental", "madeira", "azores"]),
   haveChildren: z.boolean(),
-  numberOfChildren: z.coerce.number().positive().min(1).max(10).optional(),
+  numberOfChildren: z.coerce.number().nonnegative().min(1).max(10).optional(),
+  childrenAge: z.array(z.number()).optional(),
   incomeCategory: z.enum(["A", "B"]),
   nonPortugueseCompany: z.boolean().optional(),
   atividadeOpenDate: z.date().optional(),
@@ -56,12 +57,14 @@ export function TaxForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       income: 10000,
+      deductions: 0,
       period: "2024",
       portugalResidency: true,
       nhrStatus: false,
       region: "continental",
       haveChildren: false,
       numberOfChildren: 1,
+      childrenAge: [],
       incomeCategory: "A",
       nonPortugueseCompany: false,
       atividadeOpenDate: new Date(),
@@ -70,12 +73,11 @@ export function TaxForm() {
     mode: "onChange",
   });
 
-  const { formState } = form;
-
-  const portugalResidency = form.watch("portugalResidency");
-  const haveChildren = form.watch("haveChildren");
-  const incomeCategory = form.watch("incomeCategory");
-  const nonPortugueseCompany = form.watch("nonPortugueseCompany");
+  const { formState, watch, handleSubmit } = form;
+  const portugalResidency = watch("portugalResidency");
+  const haveChildren = watch("haveChildren");
+  const incomeCategory = watch("incomeCategory");
+  const nonPortugueseCompany = watch("nonPortugueseCompany");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);

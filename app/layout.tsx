@@ -1,3 +1,5 @@
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "@/styles/globals.css";
 import type { Metadata } from "next";
@@ -16,16 +18,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} flex flex-col items-center`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange>
-          {children}
+          disableTransitionOnChange
+        >
+          <div className="container mx-auto flex min-h-svh flex-col px-4 md:px-6 lg:px-8">
+            <Header />
+            {children}
+            <Footer />
+          </div>
         </ThemeProvider>
       </body>
     </html>

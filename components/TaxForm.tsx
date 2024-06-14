@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,43 +17,55 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Separator } from "./ui/separator";
-import { Slider } from "./ui/slider";
-import { Switch } from "./ui/switch";
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const formSchema = z.object({
   income: z.coerce.number().positive(),
+  deductions: z.coerce.number().positive().optional(),
   period: z.enum(["2022", "2023", "2024"]),
   portugalResidency: z.boolean(),
   nhrStatus: z.boolean(),
   region: z.enum(["continental", "madeira", "azores"]),
   haveChildren: z.boolean(),
-  numberOfChildren: z.coerce.number().positive().min(1).max(10),
+  numberOfChildren: z.coerce.number().positive().min(1).max(10).optional(),
+  incomeCategory: z.enum(["A", "B"]),
+  nonPortugueseCompany: z.boolean().optional(),
+  atividadeOpenDate: z.date().optional(),
+  typeOfAtividade: z.enum(["goods", "services"]).optional(),
 });
 
 export function TaxForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      income: 1000,
+      income: 10000,
       period: "2024",
-      portugalResidency: false,
+      portugalResidency: true,
       nhrStatus: false,
       region: "continental",
       haveChildren: false,
       numberOfChildren: 1,
+      incomeCategory: "A",
+      nonPortugueseCompany: false,
+      atividadeOpenDate: new Date(),
+      typeOfAtividade: "services",
     },
     mode: "onChange",
   });
@@ -61,6 +74,8 @@ export function TaxForm() {
 
   const portugalResidency = form.watch("portugalResidency");
   const haveChildren = form.watch("haveChildren");
+  const incomeCategory = form.watch("incomeCategory");
+  const nonPortugueseCompany = form.watch("nonPortugueseCompany");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -89,6 +104,21 @@ export function TaxForm() {
                   </FormItem>
                 )}
               />
+              {portugalResidency && !nonPortugueseCompany && (
+                <FormField
+                  control={form.control}
+                  name="deductions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tax deductions in €</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="period"
@@ -96,7 +126,10 @@ export function TaxForm() {
                   <FormItem>
                     <FormLabel>Period</FormLabel>
                     <FormControl>
-                      <Select>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="2024" />
                         </SelectTrigger>
@@ -112,7 +145,6 @@ export function TaxForm() {
                 )}
               />
             </div>
-            <Separator />
             <div className="space-y-4">
               <h1 className="font-semibold">Residency</h1>
               <FormField
@@ -171,7 +203,10 @@ export function TaxForm() {
                       <FormItem>
                         <FormLabel>Region</FormLabel>
                         <FormControl>
-                          <Select>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Continental" />
                             </SelectTrigger>
@@ -227,6 +262,139 @@ export function TaxForm() {
                       )}
                     />
                   )}
+                </>
+              )}
+            </div>
+            <div className="space-y-4">
+              <h1 className="font-semibold">Income type</h1>
+              <FormField
+                control={form.control}
+                name="incomeCategory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Income category</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Dependant worker (employment)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="A">
+                            Dependant worker (employment)
+                          </SelectItem>
+                          <SelectItem value="B">
+                            Self-employed (trabalhador independente)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {incomeCategory === "A" ? (
+                <FormField
+                  control={form.control}
+                  name="nonPortugueseCompany"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between">
+                      <div className="space-y-0.5">
+                        <FormLabel>I work for a foreign company</FormLabel>
+                        <FormDescription>
+                          Not registred in Portugal
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
+              {incomeCategory === "B" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="atividadeOpenDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Date of opening your Atividade</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground",
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="h-[350px] w-auto p-0"
+                            align="start"
+                          >
+                            <Calendar
+                              fromYear={1980}
+                              toYear={new Date().getFullYear()}
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date > new Date() ||
+                                date < new Date("1900-01-01")
+                              }
+                            />
+                          </PopoverContent>
+                        </Popover>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="typeOfAtividade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type of your activity</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a type of your activity" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="goods">
+                                I sell goods (products)
+                              </SelectItem>
+                              <SelectItem value="services">
+                                I provide services
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </>
               )}
             </div>

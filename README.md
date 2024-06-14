@@ -5,16 +5,15 @@ This project is a tax simulation form built using React, TypeScript, and the `re
 ## Table of Contents
 
 - [Demo](#demo)
-- [Features](#features)
+- [Stack](#stack)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
 
 ## Demo
 
 ![Demo GIF](link_to_demo.gif)
 
-## STACK
+## Stack
 
 - **NextJS**
 - **TypeScript**
